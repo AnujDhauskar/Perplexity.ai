@@ -1,20 +1,22 @@
-import express from 'express';
-import cookieParser from 'cookie-parser';
+import express from "express";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/auth.routes.js";
 
 const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Basic route
-app.get('/', (req, res) => {
-  res.send('Hello World from Perplexity.ai');
+
+//Heath check
+app.get("/", (req,res) => {
+  res.json({message:"Server is runnig "});
 });
 
-// Health check route
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
-});
+
+app.use("/api/auth", authRouter);
+
 
 export default app;
