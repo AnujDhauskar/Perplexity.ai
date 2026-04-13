@@ -15,4 +15,6 @@ const authrouter = Router();
 
 authrouter.post("/register", registerValidator, register);
 
+authrouter.get("/verify-email", verifyEmail);
+
 export default authrouter;
