@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hook/useAuth'
 
 const Register = () => {
@@ -18,8 +18,10 @@ const Register = () => {
       password,
     }
 
-    await handleRegister(payload)
-    navigate('/login')
+    const isRegistered = await handleRegister(payload)
+    if (isRegistered) {
+      navigate('/login')
+    }
   }
 
   return (

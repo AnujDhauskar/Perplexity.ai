@@ -1,4 +1,4 @@
-import { RouterProvider } from "react-router"
+import { RouterProvider } from "react-router-dom"
 import { router } from "./app.routes"
 import { useAuth } from "../features/auth/hook/useAuth"
 import { useEffect } from "react"
@@ -6,11 +6,12 @@ import { useEffect } from "react"
 
 function App() {
 
-  const auth = useAuth()
+  const { handleGetMe, hydrateUserFromStorage } = useAuth()
 
   useEffect(() => {
-    auth.handleGetMe()
-  },[])
+    hydrateUserFromStorage()
+    handleGetMe()
+  }, [handleGetMe, hydrateUserFromStorage])
 
   return (
     <RouterProvider router={router} />

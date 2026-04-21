@@ -1,18 +1,25 @@
-import React, { useState } from 'react'
-import { Link , useNavigate} from 'react-router'
+import React, { useEffect, useState } from 'react'
+import { Link , useNavigate} from 'react-router-dom'
 import { useAuth } from '../hook/useAuth'
+import { useSelector } from 'react-redux'
 
 const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const {handleLogin} = useAuth()
+    const { user, loading, error } = useSelector((state) => state.auth)
     const navigate = useNavigate()
+
+    useEffect(() => {
+        if (user) {
+            navigate('/')
+        }
+    }, [navigate, user])
 
     const submitForm = async (event) => {
         event.preventDefault()
         const payload = { email, password } 
         await handleLogin(payload)
-        navigate('/')
         console.log('Login payload:', payload)
     }
 
@@ -60,11 +67,16 @@ const Login = () => {
 
                         <button
                             type="submit"
+                            disabled={loading}
                             className="w-full rounded-lg bg-[#31b8c6] px-4 py-3 font-semibold text-zinc-950 transition hover:bg-[#45c7d4] focus:outline-none focus:shadow-[0_0_0_3px_rgba(49,184,198,0.35)]"
                         >
-                            Login
+                            {loading ? 'Logging in...' : 'Login'}
                         </button>
                     </form>
+
+                    {error ? (
+                        <p className="mt-4 text-sm text-red-400">{error}</p>
+                    ) : null}
 
                     <p className="mt-6 text-center text-sm text-zinc-300">
                         Don&apos;t have an account?{' '}
