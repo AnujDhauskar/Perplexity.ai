@@ -1,7 +1,8 @@
-
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import ReactMarkdown from 'react-markdown'
+import { useSelector } from 'react-redux' 
 import { useChat } from '../hooks/useChat'
+import remarkgfm from 'remark-gfm'
 
 
 
@@ -18,7 +19,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     chat.initializeSocketConnection()
+    chat.handleGetChats()
+
   }, []) 
+
+  const openChat = (chatId) => {
+    chat.handleOpenChat(chatId, chats)
+  }
 
 
   const handleSubmitMessage = (event) => {
@@ -42,13 +49,14 @@ const Dashboard = () => {
           <h1 className='mb-5 text-3xl font-semibold tracking-tight'>Perplexity</h1>
 
           <div className='space-y-2'>
-            {Array.from({ length: 6 }).map((_, index) => (
+            {Object.values(chats).map((chat,index) => (
               <button
+              onClick={()=>{openChat(chat.id)}}
                 key={index}
                 type='button'
-                className='w-full rounded-xl border border-white/60 bg-transparent px-3 py-2 text-left text-base font-medium text-white/90 transition hover:border-white hover:text-white'
+                className='w-full cursor-pointer rounded-xl border border-white/60 bg-transparent px-3 py-2 text-left text-base font-medium text-white/90 transition hover:border-white hover:text-white'
               >
-                Chat title
+                {chat.title}
               </button>
             ))}
           </div>
@@ -62,10 +70,25 @@ const Dashboard = () => {
                 key={message.id}
                 className={`max-w-[82%] w-fit rounded-2xl px-4 py-3 text-sm md:text-base ${message.role === 'user'
                     ? 'ml-auto rounded-br-none bg-white/12 text-white'
-                    : 'mr-auto border border-white/25 bg-[#0f1626] text-white/90'
+                    : 'mr-auto border-none text-white/90'
                   }`}
               >
-                <p>{message.content}</p>
+                {message.role === 'user' ? (
+                  <p>{message.content}</p>
+                ) : (
+                  <ReactMarkdown
+                    components={{
+                      p: ({ children }) => <p className='mb-2 last:mb-0'>{children}</p>,
+                      ul: ({ children }) => <ul className='mb-2 list-disc pl-5'>{children}</ul>,
+                      ol: ({ children }) => <ol className='mb-2 list-decimal pl-5'>{children}</ol>,
+                      code: ({ children }) => <code className='rounded bg-white/10 px-1 py-0.5'>{children}</code>,
+                      pre: ({ children }) => <pre className='mb-2 overflow-x-auto rounded-xl bg-black/30 p-3'>{children}</pre>
+                    }}
+                    remarkPlugins={[remarkgfm]}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                )}
               </div>
             ))}
           </div>

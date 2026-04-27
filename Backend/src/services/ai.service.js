@@ -1,6 +1,8 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import {HumanMessage,SystemMessage} from "langchain";
+import { HumanMessage, SystemMessage, AIMessage , tool , createAgent } from "langchain";
 import {ChatMistralAI} from "@langchain/mistralai";
+import * as z from "zod";
+import { searchInternet } from "./internet.service.js";
 
 const geminiModel = new ChatGoogleGenerativeAI({
     model: "gemini-2.5-flash-lite",
@@ -9,18 +11,50 @@ const geminiModel = new ChatGoogleGenerativeAI({
 });
 
 const mistralModel = new ChatMistralAI({
-    model: "mistral-small-latest",
+    model: "mistral-medium-latest",
     apiKey: process.env.MISTRAL_API_KEY
 })
 
+const searchInternetTool = tool({
+    searchInternet,
 
-export async function generateResponse(message) {
-    const response = await geminiModel.invoke([new HumanMessage(message)
-
-    ]);
     
-    return response.text;
+        name: "searchInternet",
+        description: "Search the internet for relevant information to answer user queries. Use this tool when you need up-to-date information or to find specific details that may not be in your training data.",
+        inputSchema: z.object({
+            query: z.string().describe("The search query to find relevant information on the internet.")
+        })
+    
+    })
 
+const agent = createAgent({
+    model: mistralModel,
+    tools: [searchInternetTool],
+
+})
+    
+
+
+export async function generateResponse(messages) {
+    console.log(messages)
+
+    const response = await agent.invoke({
+        messages: [
+            new SystemMessage(`
+                You are a helpful and precise assistant for answering questions.
+                If you don't know the answer, say you don't know. 
+                If the question requires up-to-date information, use the "searchInternet" tool to get the latest information from the internet and then answer based on the search results.
+            `),
+            ...(messages.map(msg => {
+                if (msg.role == "user") {
+                    return new HumanMessage(msg.content)
+                } else if (msg.role == "ai") {
+                    return new AIMessage(msg.content)
+                }
+            })) ]
+    });
+
+    return response.messages[ response.messages.length - 1 ].text;
 
 }
 

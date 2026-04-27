@@ -26,7 +26,7 @@ app.get("/", (req,res) => {
 
 
 app.use("/api/auth", authRouter);
-app.use("/api/chat", chatRouter);
+app.use("/api/chats", chatRouter);
 
 
 export default app;
